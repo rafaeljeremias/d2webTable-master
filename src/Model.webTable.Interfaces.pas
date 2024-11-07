@@ -43,6 +43,7 @@ type
     function Order(AValue: string): IModelWebTable;
     function ColumnOrder(AValue: string): IModelWebTable;
     function Generate(AGenerateFoot: Boolean = True): string;
+    function NumberFixedColumnStart(AValue: Integer): IModelWebTable;
     function AddwebTableDataSet(AColumnName: string): IModelWebTableDataSet;
   End;
 

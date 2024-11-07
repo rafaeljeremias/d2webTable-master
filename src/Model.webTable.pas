@@ -14,6 +14,7 @@ type
   strict private
     FOrder: string;
     FColumnOrder: string;
+    FNumberFixedColumnStart: Integer;
     FwebTableDataSets: TInterfaceList;
 
     function GenerateBodyHtml: string;
@@ -27,6 +28,7 @@ type
     function Order(AValue: string): IModelWebTable;
     function ColumnOrder(AValue: string): IModelWebTable;
     function Generate(AGenerateFoot: Boolean = True): string;
+    function NumberFixedColumnStart(AValue: Integer): IModelWebTable;
     function AddwebTableDataSet(AColumnName: string): IModelWebTableDataSet;
   end;
 
@@ -74,6 +76,9 @@ begin
 
   LRetornoHtmlStr := Format('<script src="https://code.jquery.com/jquery-3.7.1.js"></script> ' +
                             '<script src="https://cdn.datatables.net/2.1.4/js/dataTables.js"></script> '+
+                            ifThen(FNumberFixedColumnStart > 0,
+                            '<script src="https://cdn.datatables.net/fixedcolumns/5.0.3/js/dataTables.fixedColumns.js"></script> '+
+                            '<script src="https://cdn.datatables.net/fixedcolumns/5.0.3/js/fixedColumns.dataTables.js"></script> ', '')+
                             '<table id="table%s" class="display" style="width:%s"> ',
                             [LWebTableID, '100%']);
 
@@ -96,6 +101,8 @@ begin
                      Format('</table> ' +
                             '<script> '+
                             '  new DataTable("#table%s", { '+
+                            ifThen(FNumberFixedColumnStart > 0,
+                              Format('fixedColumns: { start: %d },', [FNumberFixedColumnStart]), '') +
                             '    layout: { '+
                             '      bottomEnd: { '+
                             '        paging: { '+
@@ -209,6 +216,13 @@ end;
 class function TModelWebTable.New: IModelWebTable;
 begin
   result := Self.Create;
+end;
+
+function TModelWebTable.NumberFixedColumnStart(AValue: Integer): IModelWebTable;
+begin
+  result := Self;
+
+  FNumberFixedColumnStart := AValue;
 end;
 
 function TModelWebTable.Order(AValue: string): IModelWebTable;
