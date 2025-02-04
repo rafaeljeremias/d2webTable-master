@@ -10,6 +10,21 @@ type
 
   IModelWebTable = Interface;
 
+  IModelWebTableButton = Interface
+    ['{2182A9B2-03CB-4340-B37B-CC84555299D0}']
+    function Nome: string; overload;
+    function Color: string; overload;
+    function IconName: string; overload;
+    function ParamName: string; overload;
+    function CallBackName: string; overload;
+
+    function Nome(AValue: string): IModelWebTableButton; overload;
+    function Color(AValue: string): IModelWebTableButton; overload;
+    function IconName(AValue: string): IModelWebTableButton; overload;
+    function ParamName(AValue: string): IModelWebTableButton; overload;
+    function CallBackName(AValue: string): IModelWebTableButton; overload;
+  End;
+
   IModelWebTableData = Interface
     ['{CA5DC7A9-A4E3-4AAB-9D2F-69307F41BBB2}']
     function Text: string; overload;
@@ -29,6 +44,8 @@ type
 
   IModelWebTableDataSet = Interface
     ['{2F7B7108-CA7A-4DEC-B055-5E0C999677F7}']
+    function Key: Boolean;
+    function Visible: Boolean;
     function ColumnName: string;
     function RecordCount: Integer;
     function &End: IModelWebTable;
@@ -44,7 +61,9 @@ type
     function ColumnOrder(AValue: string): IModelWebTable;
     function Generate(AGenerateFoot: Boolean = True): string;
     function NumberFixedColumnStart(AValue: Integer): IModelWebTable;
-    function AddwebTableDataSet(AColumnName: string): IModelWebTableDataSet;
+    function AddActionButton(AValue: IModelWebTableButton): IModelWebTable;
+    function AddWebTableDataSet(AColumnName: string; AKey: Boolean = False;
+      AVisible: Boolean = True): IModelWebTableDataSet;
   End;
 
 implementation

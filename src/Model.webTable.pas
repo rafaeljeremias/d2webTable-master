@@ -6,8 +6,8 @@ uses
   System.Classes,
   System.StrUtils,
   System.SysUtils,
-  Model.webTable.DataSet,
-  Model.webTable.Interfaces;
+  Model.WebTable.DataSet,
+  Model.WebTable.Interfaces;
 
 type
   TModelWebTable = class(TInterfacedObject, IModelWebTable)
@@ -15,7 +15,8 @@ type
     FOrder: string;
     FColumnOrder: string;
     FNumberFixedColumnStart: Integer;
-    FwebTableDataSets: TInterfaceList;
+    FWebTableDataSets: TInterfaceList;
+    FActionButtonList: TInterfaceList;
 
     function GenerateBodyHtml: string;
     function GenerateFootHtml: string;
@@ -29,19 +30,29 @@ type
     function ColumnOrder(AValue: string): IModelWebTable;
     function Generate(AGenerateFoot: Boolean = True): string;
     function NumberFixedColumnStart(AValue: Integer): IModelWebTable;
-    function AddwebTableDataSet(AColumnName: string): IModelWebTableDataSet;
+    function AddActionButton(AValue: IModelWebTableButton): IModelWebTable;
+    function AddwebTableDataSet(AColumnName: string; AKey: Boolean = False;
+      AVisible: Boolean = False): IModelWebTableDataSet;
   end;
 
 implementation
 
 { TModelWebTable }
 
-function TModelWebTable.AddwebTableDataSet(
-  AColumnName: string): IModelWebTableDataSet;
+function TModelWebTable.AddActionButton(
+  AValue: IModelWebTableButton): IModelWebTable;
 begin
-  Result := TModelWebTableDataSet.New(Self, AColumnName);
+  result := Self;
 
-  FwebTableDataSets.Add(Result);
+  FActionButtonList.Add(AValue);
+end;
+
+function TModelWebTable.AddwebTableDataSet(AColumnName: string; AKey: Boolean;
+  AVisible: Boolean): IModelWebTableDataSet;
+begin
+  Result := TModelWebTableDataSet.New(Self, AColumnName, AKey, AVisible);
+
+  FWebTableDataSets.Add(Result);
 end;
 
 function TModelWebTable.ColumnOrder(AValue: string): IModelWebTable;
@@ -55,12 +66,14 @@ constructor TModelWebTable.Create;
 begin
   inherited Create;
 
-  FwebTableDataSets := TInterfaceList.Create;
+  FWebTableDataSets := TInterfaceList.Create;
+  FActionButtonList := TInterfaceList.Create;
 end;
 
 destructor TModelWebTable.Destroy;
 begin
-  FwebTableDataSets.Free;
+  FWebTableDataSets.Free;
+  FActionButtonList.Free;
 
   inherited;
 end;
@@ -164,7 +177,38 @@ begin
         for var I := 0 to Pred(FwebTableDataSets.Count) do
         begin
           LWebTableSet := (FwebTableDataSets[I] as IModelWebTableDataSet);
-          LRetornoHtmlStr := LRetornoHtmlStr + LWebTableSet.Generate(X);
+
+          if LWebTableSet.Visible then
+            LRetornoHtmlStr := LRetornoHtmlStr + LWebTableSet.Generate(X);
+        end;
+
+        if FActionButtonList.Count > 0 then
+        begin
+          for var I := 0 to Pred(FWebTableDataSets.Count) do
+          begin
+            LWebTableSet := (FWebTableDataSets[I] as IModelWebTableDataSet);
+
+            if LWebTableSet.Key then
+            begin
+              for var LActionButton in FActionButtonList do
+              begin
+                with LActionButton as IModelWebTableButton do
+                begin
+                  LRetornoHtmlStr := LRetornoHtmlStr +
+                    Format('<td class="text-center"> '+
+                      '  <button id="bEdit" type="button" class="btn btn-sm btn-%s" '+
+                      '    onclick="{{CallBack=%s(%s='+ LWebTableSet.Generate(X) +')}}">'+
+                      '      <span class="fa fa-%s"></span> '+
+                      '  </button> '+
+                      '</td>',
+                      [Color,
+                       CallBackName,
+                       ParamName,
+                       IconName]);
+                end;
+              end;
+            end;
+          end;
         end;
 
         LRetornoHtmlStr := LRetornoHtmlStr + '</tr> ';
@@ -187,8 +231,13 @@ begin
   for var I := 0 to Pred(FwebTableDataSets.Count) do
   begin
     LWebTableSet := (FwebTableDataSets[I] as IModelWebTableDataSet);
-    LRetornoHtmlStr := LRetornoHtmlStr +'<th>'+ LWebTableSet.ColumnName +'</th>';
+
+    if LWebTableSet.Visible then
+      LRetornoHtmlStr := LRetornoHtmlStr +'<th>'+ LWebTableSet.ColumnName +'</th>';
   end;
+
+  if FActionButtonList.Count > 0 then
+    LRetornoHtmlStr := LRetornoHtmlStr +'<th></th>';
 
   LRetornoHtmlStr := LRetornoHtmlStr + '</tr> </tfoot> ';
 
@@ -205,8 +254,13 @@ begin
   for var I := 0 to Pred(FwebTableDataSets.Count) do
   begin
     LWebTableSet := (FwebTableDataSets[I] as IModelWebTableDataSet);
-    LRetornoHtmlStr := LRetornoHtmlStr +'<th>'+ LWebTableSet.ColumnName +'</th>';
+
+    if LWebTableSet.Visible then
+      LRetornoHtmlStr := LRetornoHtmlStr +'<th>'+ LWebTableSet.ColumnName +'</th>';
   end;
+
+  if FActionButtonList.Count > 0 then
+    LRetornoHtmlStr := LRetornoHtmlStr +'<th>Ações</th>';
 
   LRetornoHtmlStr := LRetornoHtmlStr + '</tr> </thead> ';
 

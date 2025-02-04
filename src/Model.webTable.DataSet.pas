@@ -16,12 +16,18 @@ type
     [weak]
     FParent: IModelWebTable;
     FColumnName: string;
+    FKey: Boolean;
+    FVisible: Boolean;
     FListItens: TInterfaceList;
   public
-    constructor Create(AParent:  IModelWebTable; AColumnName: string);
+    constructor Create(AParent:  IModelWebTable; AColumnName: string;
+      AKey: Boolean; AVisible: Boolean);
     destructor Destroy; override;
-    class function New(AParent: IModelWebTable; AColumnName: string): IModelWebTableDataSet;
+    class function New(AParent: IModelWebTable; AColumnName: string;
+      AKey: Boolean; AVisible: Boolean): IModelWebTableDataSet;
 
+    function Key: Boolean;
+    function Visible: Boolean;
     function Generate(AIndex: Integer): string;
     function ColumnName: string;
     function &End: IModelWebTable;
@@ -52,11 +58,14 @@ begin
   result := FColumnName;
 end;
 
-constructor TModelWebTableDataSet.Create(AParent: IModelWebTable; AColumnName: string);
+constructor TModelWebTableDataSet.Create(AParent: IModelWebTable;
+  AColumnName: string; AKey: Boolean; AVisible: Boolean);
 begin
   inherited Create;
 
+  FKey := AKey;
   FParent := AParent;
+  FVisible := AVisible;
   FColumnName := AColumnName;
   FListItens := TInterfaceList.Create;
 end;
@@ -106,15 +115,25 @@ begin
   Result := DataStr;
 end;
 
-class function TModelWebTableDataSet.New(
-  AParent: IModelWebTable; AColumnName: string): IModelWebTableDataSet;
+function TModelWebTableDataSet.Key: Boolean;
 begin
-  result := Self.Create(AParent, AColumnName);
+  result := FKey;
+end;
+
+class function TModelWebTableDataSet.New(AParent: IModelWebTable;
+  AColumnName: string; AKey: Boolean; AVisible: Boolean): IModelWebTableDataSet;
+begin
+  result := Self.Create(AParent, AColumnName, AKey, AVisible);
 end;
 
 function TModelWebTableDataSet.RecordCount: Integer;
 begin
   result := FListItens.Count;
+end;
+
+function TModelWebTableDataSet.Visible: Boolean;
+begin
+  result := FVisible;
 end;
 
 end.
